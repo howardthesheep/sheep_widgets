@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../data/validators.dart';
 
-class ReviewableSocialsInput extends StatefulWidget {
+class SocialsInput extends StatefulWidget {
   final TextEditingController cFacebook;
   final TextEditingController cInstagram;
   final TextEditingController cTwitter;
   final TextEditingController cLinkedIn;
   final TextEditingController cTiktok;
   final TextEditingController cYoutube;
-  final bool reviewable;
 
-  const ReviewableSocialsInput({
+  const SocialsInput({
     super.key,
-    this.reviewable = true,
     required this.cFacebook,
     required this.cInstagram,
     required this.cTiktok,
@@ -23,10 +21,10 @@ class ReviewableSocialsInput extends StatefulWidget {
   });
 
   @override
-  State<ReviewableSocialsInput> createState() => _ReviewableSocialsInputState();
+  State<SocialsInput> createState() => _SocialsInputState();
 }
 
-class _ReviewableSocialsInputState extends State<ReviewableSocialsInput> {
+class _SocialsInputState extends State<SocialsInput> {
   @override
   Widget build(BuildContext context) {
     return Column(

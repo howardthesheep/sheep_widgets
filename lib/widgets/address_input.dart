@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
@@ -11,7 +12,14 @@ class AddressInput extends StatefulWidget {
   final String labelText;
   final String? Function(String? value)? validator;
   final bool enabled;
-  final bool reviewable;
+  final Function(String)? onChanged;
+  final bool readOnly;
+  final List<TextInputFormatter>? inputFormatters;
+  final AutovalidateMode? autovalidateMode;
+  final Widget? prefix;
+  final Widget? prefixIcon;
+  final Widget? suffix;
+  final Widget? suffixIcon;
 
   const AddressInput({
     super.key,
@@ -20,7 +28,14 @@ class AddressInput extends StatefulWidget {
     this.labelText = "Address",
     this.validator,
     this.enabled = true,
-    this.reviewable = false,
+    this.readOnly = false,
+    this.onChanged,
+    this.inputFormatters,
+    this.autovalidateMode,
+    this.prefix,
+    this.prefixIcon,
+    this.suffix,
+    this.suffixIcon,
   });
 
   @override
@@ -32,7 +47,6 @@ class _AddressInputState extends State<AddressInput> {
   var uuid = const Uuid();
   List<dynamic> _placeList = [];
   bool _addressChosen = false;
-  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -65,8 +79,6 @@ class _AddressInputState extends State<AddressInput> {
     getSuggestion(widget.controller.text);
   }
 
-  // TODO: Eventually need to reverse proxy our queries thru our api
-  //       This way we can also enforce IP restrictions on our API Key if google allows?
   void getSuggestion(String input) async {
     String kplacesApiKey = widget.apiKey;
     String type = 'address';
@@ -96,87 +108,56 @@ class _AddressInputState extends State<AddressInput> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.reviewable
-        ? Stack(
-            alignment: Alignment.center,
-            children: [
-              TextFormField(
-                enabled: false,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) {
-                  _placeList.clear();
-                },
-                controller: widget.controller,
-                validator: widget.validator,
-                decoration: InputDecoration(
-                  labelText: widget.labelText,
-                  border: const OutlineInputBorder(),
-                ),
+    return Column(
+      children: [
+        TextFormField(
+          enabled: widget.enabled,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) {
+            _placeList.clear();
+          },
+          controller: widget.controller,
+          validator: widget.validator,
+          maxLines: 1,
+          keyboardType: TextInputType.streetAddress,
+          onChanged: widget.onChanged,
+          minLines: 1,
+          readOnly: widget.readOnly,
+          inputFormatters: widget.inputFormatters,
+          key: widget.key,
+          autovalidateMode: widget.autovalidateMode,
+          decoration: InputDecoration(
+            labelText: widget.labelText,
+            border: const OutlineInputBorder(),
+            prefix: widget.prefix,
+            prefixIcon: widget.prefixIcon,
+            suffix: widget.suffix,
+            suffixIcon: widget.suffixIcon,
+          ),
+        ),
+        ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: _placeList.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                if (mounted) {
+                  setState(() {
+                    _addressChosen = true;
+                    widget.controller.text = _placeList[index]["description"];
+                    _placeList.clear();
+                  });
+                }
+              },
+              child: ListTile(
+                title: Text(_placeList[index]["description"]),
+                hoverColor: Theme.of(context).primaryColor.withAlpha(200),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MaterialButton(
-                      minWidth: 25,
-                      color: Colors.green,
-                      onPressed: () {
-                        print('check pressed');
-                      },
-                      child: const Icon(Icons.check, color: Colors.white),
-                    ),
-                    MaterialButton(
-                      minWidth: 25,
-                      color: Colors.red,
-                      onPressed: () {
-                        print('close pressed');
-                      },
-                      child: const Icon(Icons.close, color: Colors.white),
-                    )
-                  ],
-                ),
-              )
-            ],
-          )
-        : Column(
-            children: [
-              TextFormField(
-                enabled: widget.enabled,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) {
-                  _placeList.clear();
-                },
-                controller: widget.controller,
-                validator: widget.validator,
-                decoration: InputDecoration(
-                  labelText: widget.labelText,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _placeList.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        setState(() {
-                          _addressChosen = true;
-                          widget.controller.text = _placeList[index]["description"];
-                          _placeList.clear();
-                        });
-                      }
-                    },
-                    child: ListTile(
-                      title: Text(_placeList[index]["description"]),
-                      hoverColor: Theme.of(context).primaryColor.withAlpha(200),
-                    ),
-                  );
-                },
-              )
-            ],
-          );
+            );
+          },
+        )
+      ],
+    );
   }
 }
