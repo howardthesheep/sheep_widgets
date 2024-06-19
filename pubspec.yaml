@@ -1,10 +1,6 @@
 name: sheep_widgets
-description: "Sheep Widgets is a group of custom widgets I find myself using repetitively
-throughout the development process across multiple projects. The idea is to create a central repository
-for these widgets to maximize code reuse and readability."
-version: 0.0.1
-authors:
-  - "Parker Jones"
+description: "Reusable snippets of widgets, data validators, and more."
+version: 0.0.2
 homepage: https://github.com/howardthesheep/sheep_widgets
 
 environment:

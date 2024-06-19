@@ -98,10 +98,8 @@ class _AddressInputState extends State<AddressInput> {
       // print(' response is 200');
       setState(() {
         _placeList = json.decode(response.body)['predictions'];
-        print(_placeList);
       });
     } else {
-      print(response.statusCode);
       throw Exception('Failed to load predictions');
     }
   }
